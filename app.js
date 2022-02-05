@@ -1,12 +1,8 @@
 const { App } = require('@slack/bolt');
 
-/* 
-This sample slack application uses SocketMode
-For the companion getting started setup guide, 
-see: https://slack.dev/bolt-js/tutorial/getting-started 
-*/
+// Entrypoint for App
 
-// Initializes your app with your bot token and app token
+// Initialize app with tokens
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
   socketMode: true,
@@ -70,25 +66,21 @@ app.command('/addemoji', async ({ command, payload, ack, respond }) => {
 });
 
 app.action('resize', async ({ body, ack, say }) => {
-  // Acknowledge the action
   await ack();
   await say(`<@${body.user.id}> clicked the button`);
 });
 
 app.action('reduce_quality', async ({ body, ack, say }) => {
-  // Acknowledge the action
   await ack();
   await say(`<@${body.user.id}> clicked the button`);
 });
 
 app.action('crop', async ({ body, ack, say }) => {
-  // Acknowledge the action
   await ack();
   await say(`<@${body.user.id}> clicked the button`);
 });
 
 app.action('remove_frames', async ({ body, ack, say }) => {
-  // Acknowledge the action
   await ack();
   await say(`<@${body.user.id}> clicked the button`);
 });
