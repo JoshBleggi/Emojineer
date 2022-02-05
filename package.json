@@ -1,0 +1,24 @@
+{
+  "name": "emojineer",
+  "version": "1.0.0",
+  "description": "Emoji Editing API for Slack",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoshBleggi/Emojineer.git"
+  },
+  "keywords": [
+    "Slack",
+    "Emoji",
+    "Bolt"
+  ],
+  "author": "Josh Bleggi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/JoshBleggi/Emojineer/issues"
+  },
+  "homepage": "https://github.com/JoshBleggi/Emojineer#readme"
+}
