@@ -13,6 +13,62 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN
 });
 
+app.command('/addemoji', async ({ command, payload, ack, respond }) => {
+  // Acknowledge command request
+  await ack();
+
+  console.log(payload);
+
+  await respond({
+    blocks: [
+      {
+        "type": "section",
+        "text": {
+          "type": "plain_text",
+          "text": `Your image is too large for Slack to import automatically. Would you like to modify it?`
+        }
+      },
+      {
+        "type": "actions",
+        "elements": [
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "Resize"
+            },
+            "action_id": "resize"
+          },
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "Reduce Quality"
+            },
+            "action_id": "reduce_quality"
+          },
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "Crop"
+            },
+            "action_id": "crop"
+          },
+          {
+            "type": "button",
+            "text": {
+              "type": "plain_text",
+              "text": "Remove Frames"
+            },
+            "action_id": "remove_frames"
+          }
+        ]
+      }
+    ]
+  });
+});
+
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
   // say() sends a message to the channel where the event was triggered
