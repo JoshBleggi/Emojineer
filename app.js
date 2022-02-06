@@ -86,22 +86,12 @@ async function imageTooLarge(respond, imageUri) {
            },
            "action_id": "reduce_quality",
            "value": imageUri
-         },
-         {
-           "type": "button",
-           "text": {
-             "type": "plain_text",
-             "text": "Remove Frames"
-           },
-           "action_id": "remove_frames",
-           "value": imageUri
          }
        ]
      }
    ]
  });
 }
-
 
 app.action('resize', async ({ payload, client, ack, respond }) => {
   await ack();
@@ -189,11 +179,6 @@ app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
   catch (err) {
     respond(`An error was experienced during the operation: ${err}`)
   }
-});
-
-app.action('compress', async ({ payload, client, ack, respond }) => {
-  await ack();
-  await deleteOriginalEphemeralMessage(respond);
 });
 
 async function deleteOriginalEphemeralMessage(respond) {
