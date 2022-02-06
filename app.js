@@ -103,7 +103,7 @@ async function imageTooLarge(respond, imageUri) {
 }
 
 
-app.action('resize', async ({ payload, body, client, ack, respond }) => {
+app.action('resize', async ({ payload, client, ack, respond }) => {
   await ack();
   await deleteOriginalEphemeralMessage(respond);
   
@@ -114,7 +114,7 @@ app.action('resize', async ({ payload, body, client, ack, respond }) => {
     .then(res => {
       var imageBuffer = Buffer.from(res.data, 'binary');
       sharp(imageBuffer, imageEditingOptions)
-      .resize(128, 128)
+      .resize({ width: 128, height: 128, fit: "inside" })
       .toBuffer(async (err, buffer, info) => { 
         if (err) {
           throw err;
