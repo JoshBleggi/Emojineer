@@ -115,7 +115,7 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
       var imageBuffer = Buffer.from(res.data, 'binary');
       sharp(imageBuffer, imageEditingOptions)
       .resize({ width: 128, height: 128, fit: "inside" })
-      .toBuffer(async (err, buffer, info) => { 
+      .toBuffer(async (err, buffer) => { 
         if (err) {
           throw err;
         }
@@ -151,7 +151,7 @@ app.action('crop', async ({ payload, client, ack, respond }) => {
       var minDimension = Math.min(imageMetadata.width, imageMetadata.height);
 
       image.resize(minDimension, minDimension)
-      .toBuffer(async (err, buffer, info) => { 
+      .toBuffer(async (err, buffer) => { 
         if (err) {
           throw err;
         }
