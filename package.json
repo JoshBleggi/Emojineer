@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/JoshBleggi/Emojineer/issues"
   },
-  "homepage": "https://github.com/JoshBleggi/Emojineer#readme"
+  "homepage": "https://github.com/JoshBleggi/Emojineer#readme",
+  "dependencies": {
+    "@slack/bolt": "^3.9.0"
+  }
 }
