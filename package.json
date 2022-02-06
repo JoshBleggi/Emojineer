@@ -17,6 +17,9 @@
   ],
   "author": "Josh Bleggi",
   "license": "MIT",
+  "dependencies": {
+    "@slack/bolt": "^3.6.0"
+  },
   "bugs": {
     "url": "https://github.com/JoshBleggi/Emojineer/issues"
   },
