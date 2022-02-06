@@ -135,9 +135,35 @@ app.action('reduce_quality', async ({ ack, respond }) => {
   await deleteOriginalEphemeralMessage(respond);
 });
 
-app.action('crop', async ({ ack, respond }) => {
+app.action('crop', async ({ payload, client, ack, respond }) => {
   await ack();
   await deleteOriginalEphemeralMessage(respond);
+  
+  try {
+    axios.get(payload.value, {
+      responseType: 'arraybuffer'
+    })
+    .then(async (res) => {
+      var imageBuffer = Buffer.from(res.data, 'binary');
+      
+      var image = sharp(imageBuffer, imageEditingOptions);
+      var imageMetadata = await image.metadata();
+      var minDimension = Math.min(imageMetadata.width, imageMetadata.height);
+
+      image.resize(minDimension, minDimension)
+      .toBuffer(async (err, buffer, info) => { 
+        if (err) {
+          throw err;
+        }
+
+        var publicImageURL = await uploadImageToPublicURL(client, buffer);
+        imageTooLarge(respond, publicImageURL);
+      });
+    })
+  }
+  catch (err) {
+    respond(`An error was experienced during the operation: ${err}`)
+  }
 });
 
 app.action('remove_frames', async ({ ack, respond }) => {
