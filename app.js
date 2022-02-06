@@ -73,25 +73,33 @@ async function imageTooLarge(respond) {
  });
 }
 
-app.action('resize', async ({ body, ack, say }) => {
+
+app.action('resize', async ({ ack, respond }) => {
   await ack();
-  await say(`<@${body.user.id}> clicked the button`);
+  await deleteOriginalEphemeralMessage(respond);
 });
 
-app.action('reduce_quality', async ({ body, ack, say }) => {
+app.action('reduce_quality', async ({ ack, respond }) => {
   await ack();
-  await say(`<@${body.user.id}> clicked the button`);
+  await deleteOriginalEphemeralMessage(respond);
 });
 
-app.action('crop', async ({ body, ack, say }) => {
+app.action('crop', async ({ ack, respond }) => {
   await ack();
-  await say(`<@${body.user.id}> clicked the button`);
+  await deleteOriginalEphemeralMessage(respond);
 });
 
-app.action('remove_frames', async ({ body, ack, say }) => {
+app.action('remove_frames', async ({ ack, respond }) => {
   await ack();
-  await say(`<@${body.user.id}> clicked the button`);
+  await deleteOriginalEphemeralMessage(respond);
 });
+
+async function deleteOriginalEphemeralMessage(respond) {
+  await respond({
+    "response_type" : "ephemeral",
+    "delete_original" : true
+  })
+}
 
 (async () => {
   // Start your app
