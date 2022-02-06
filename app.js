@@ -1,7 +1,6 @@
 const { App } = require('@slack/bolt');
 
 // Entrypoint for App
-
 // Initialize app with tokens
 const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -9,11 +8,16 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN
 });
 
+const uriRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+
 app.command('/addemoji', async ({ command, payload, ack, respond }) => {
   // Acknowledge command request
   await ack();
 
-  console.log(payload);
+  if (!payload.text || !payload.text.match(uriRegex)) {
+    await respond(`A valid URI to the source image must be included`);
+    return;
+  }
   await imageTooLarge(respond);
   
 });
