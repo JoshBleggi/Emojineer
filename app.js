@@ -10,7 +10,7 @@ const app = new App({
 
 const uriRegex = /^(ftp|http|https):\/\/[^ "]+$/;
 
-app.command('/addemoji', async ({ command, payload, ack, respond }) => {
+app.command('/addemoji', async ({ payload, ack, respond }) => {
   // Acknowledge command request
   await ack();
 
