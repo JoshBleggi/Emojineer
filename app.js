@@ -73,18 +73,18 @@ async function imageTooLarge(respond, imageUri) {
            "type": "button",
            "text": {
              "type": "plain_text",
-             "text": "Reduce Quality"
+             "text": "Crop"
            },
-           "action_id": "reduce_quality",
+           "action_id": "crop",
            "value": imageUri
          },
          {
            "type": "button",
            "text": {
              "type": "plain_text",
-             "text": "Crop"
+             "text": "Reduce Quality"
            },
-           "action_id": "crop",
+           "action_id": "reduce_quality",
            "value": imageUri
          },
          {
