@@ -25,12 +25,16 @@ app.command('/addemoji', async ({ payload, ack, respond }) => {
     await respond(`Source image URL must be valid`);
     return;
   }
-
-  await imageTooLarge(respond);
   
+  try {
+    await imageTooLarge(respond, sourceUri);
+  }
+  catch (ex) {
+    await respond(`Something went wrong. Please make sure your URL redirects to an image.`);
+  }
 });
 
-async function imageTooLarge(respond) {
+async function imageTooLarge(respond, imageUri) {
   await respond({
     blocks: [
      {
@@ -39,6 +43,11 @@ async function imageTooLarge(respond) {
          "type": "plain_text",
          "text": `Your image is too large for Slack to import automatically. Would you like to modify it?`
        }
+     },
+     {
+      "type": "image",
+      "image_url": imageUri,
+      "alt_text": "Possible future Emoji"
      },
      {
        "type": "actions",
