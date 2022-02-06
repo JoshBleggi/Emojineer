@@ -125,7 +125,7 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
       });
     })
   }
-  catch {
+  catch (err) {
     respond(`An error was experienced during the operation: ${err}`)
   }
 });
