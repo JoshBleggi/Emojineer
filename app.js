@@ -8,16 +8,24 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN
 });
 
-const uriRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-
 app.command('/addemoji', async ({ payload, ack, respond }) => {
   // Acknowledge command request
   await ack();
 
-  if (!payload.text || !payload.text.match(uriRegex)) {
-    await respond(`A valid URI to the source image must be included`);
+  if (!payload.text) {
+    await respond(`A URL to the source image must be included`);
     return;
   }
+
+  let sourceUri;
+  try {
+    sourceUri = new URL(payload.text);
+  }
+  catch (ex) {
+    await respond(`Source image URL must be valid`);
+    return;
+  }
+
   await imageTooLarge(respond);
   
 });
