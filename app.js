@@ -12,6 +12,10 @@ const app = new App({
 
 const userToken = process.env.SLACK_USER_TOKEN;
 
+const imageEditingOptions = {
+  animated: true
+};
+
 app.command('/addemoji', async ({ payload, ack, respond }) => {
   // Acknowledge command request
   await ack();
@@ -109,7 +113,7 @@ app.action('resize', async ({ payload, body, client, ack, respond }) => {
     })
     .then(res => {
       var imageBuffer = Buffer.from(res.data, 'binary');
-      sharp(imageBuffer)
+      sharp(imageBuffer, imageEditingOptions)
       .resize(128, 128)
       .toBuffer(async (err, buffer, info) => { 
         if (err) {
@@ -166,7 +170,7 @@ async function uploadImageToPublicURL(client, buffer) {
 function constructDirectImageURLFromFile(file) {
   //Following unofficial method of constructing direct link to image https://stackoverflow.com/a/57254520/1413199
   var permalinkElements = file.permalink_public.split('-');
-  return `${file.url_private}?pub_secret=${permalinkElements[permalinkElements.length - 1]}`
+  return new URL(`${file.url_private}?pub_secret=${permalinkElements[permalinkElements.length - 1]}`)
 }
 
 (async () => {
