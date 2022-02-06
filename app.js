@@ -130,11 +130,6 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
   }
 });
 
-app.action('reduce_quality', async ({ ack, respond }) => {
-  await ack();
-  await deleteOriginalEphemeralMessage(respond);
-});
-
 app.action('crop', async ({ payload, client, ack, respond }) => {
   await ack();
   await deleteOriginalEphemeralMessage(respond);
@@ -166,7 +161,37 @@ app.action('crop', async ({ payload, client, ack, respond }) => {
   }
 });
 
-app.action('remove_frames', async ({ ack, respond }) => {
+app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
+  await ack();
+  await deleteOriginalEphemeralMessage(respond);
+  
+  try {
+    axios.get(payload.value, {
+      responseType: 'arraybuffer'
+    })
+    .then(async (res)  => {
+      var imageBuffer = Buffer.from(res.data, 'binary');
+      sharp(imageBuffer, imageEditingOptions)
+      .jpeg({ quality: 75, force: false })
+      .png({ quality: 75, force: false })
+      .webp({ quality: 75, force: false })
+      .gif({ colours: 128, force: false })
+      .toBuffer(async (err, buffer) => { 
+        if (err) {
+          throw err;
+        }
+
+        var publicImageURL = await uploadImageToPublicURL(client, buffer);
+        imageTooLarge(respond, publicImageURL);
+      });
+    })
+  }
+  catch (err) {
+    respond(`An error was experienced during the operation: ${err}`)
+  }
+});
+
+app.action('compress', async ({ payload, client, ack, respond }) => {
   await ack();
   await deleteOriginalEphemeralMessage(respond);
 });
