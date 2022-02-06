@@ -1,12 +1,16 @@
 const { App } = require('@slack/bolt');
+const sharp = require('sharp');
+const axios = require('axios')
 
 // Entrypoint for App
 // Initialize app with tokens
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
   socketMode: true,
+  token: process.env.SLACK_BOT_TOKEN,
   appToken: process.env.SLACK_APP_TOKEN
 });
+
+const userToken = process.env.SLACK_USER_TOKEN;
 
 app.command('/addemoji', async ({ payload, ack, respond }) => {
   // Acknowledge command request
@@ -58,7 +62,8 @@ async function imageTooLarge(respond, imageUri) {
              "type": "plain_text",
              "text": "Resize"
            },
-           "action_id": "resize"
+           "action_id": "resize",
+           "value": imageUri
          },
          {
            "type": "button",
@@ -66,7 +71,8 @@ async function imageTooLarge(respond, imageUri) {
              "type": "plain_text",
              "text": "Reduce Quality"
            },
-           "action_id": "reduce_quality"
+           "action_id": "reduce_quality",
+           "value": imageUri
          },
          {
            "type": "button",
@@ -74,7 +80,8 @@ async function imageTooLarge(respond, imageUri) {
              "type": "plain_text",
              "text": "Crop"
            },
-           "action_id": "crop"
+           "action_id": "crop",
+           "value": imageUri
          },
          {
            "type": "button",
@@ -82,7 +89,8 @@ async function imageTooLarge(respond, imageUri) {
              "type": "plain_text",
              "text": "Remove Frames"
            },
-           "action_id": "remove_frames"
+           "action_id": "remove_frames",
+           "value": imageUri
          }
        ]
      }
@@ -91,9 +99,31 @@ async function imageTooLarge(respond, imageUri) {
 }
 
 
-app.action('resize', async ({ ack, respond }) => {
+app.action('resize', async ({ payload, body, client, ack, respond }) => {
   await ack();
   await deleteOriginalEphemeralMessage(respond);
+  
+  try {
+    axios.get(payload.value, {
+      responseType: 'arraybuffer'
+    })
+    .then(res => {
+      var imageBuffer = Buffer.from(res.data, 'binary');
+      sharp(imageBuffer)
+      .resize(128, 128)
+      .toBuffer(async (err, buffer, info) => { 
+        if (err) {
+          throw err;
+        }
+
+        var publicImageURL = await uploadImageToPublicURL(client, buffer);
+        imageTooLarge(respond, publicImageURL);
+      });
+    })
+  }
+  catch {
+    respond(`An error was experienced during the operation: ${err}`)
+  }
 });
 
 app.action('reduce_quality', async ({ ack, respond }) => {
@@ -116,6 +146,27 @@ async function deleteOriginalEphemeralMessage(respond) {
     "response_type" : "ephemeral",
     "delete_original" : true
   })
+}
+
+async function uploadImageToPublicURL(client, buffer) {
+  //Following unofficial method of resharing a method without making it public https://stackoverflow.com/a/58189401/1413199
+  let uploadResult = await client.files.upload({
+    token: userToken,
+    file: buffer
+  });
+
+  let shareResult = await client.files.sharedPublicURL({
+    token: userToken,
+    file: uploadResult.file.id
+  });
+
+  return constructDirectImageURLFromFile(shareResult.file);
+}
+
+function constructDirectImageURLFromFile(file) {
+  //Following unofficial method of constructing direct link to image https://stackoverflow.com/a/57254520/1413199
+  var permalinkElements = file.permalink_public.split('-');
+  return `${file.url_private}?pub_secret=${permalinkElements[permalinkElements.length - 1]}`
 }
 
 (async () => {
