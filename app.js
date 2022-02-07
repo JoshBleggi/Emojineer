@@ -1,6 +1,7 @@
 const { App } = require('@slack/bolt');
 const sharp = require('sharp');
 const axios = require('axios')
+const imageEditingView = require('./views/imageEditingView.js')
 
 // Entrypoint for App
 // Initialize app with tokens
@@ -43,54 +44,7 @@ app.command('/addemoji', async ({ payload, ack, respond }) => {
 });
 
 async function imageTooLarge(respond, imageUri) {
-  await respond({
-    blocks: [
-     {
-       "type": "section",
-       "text": {
-         "type": "plain_text",
-         "text": `Your image is too large for Slack to import automatically. Would you like to modify it?`
-       }
-     },
-     {
-      "type": "image",
-      "image_url": imageUri,
-      "alt_text": "Possible future Emoji"
-     },
-     {
-       "type": "actions",
-       "elements": [
-         {
-           "type": "button",
-           "text": {
-             "type": "plain_text",
-             "text": "Resize"
-           },
-           "action_id": "resize",
-           "value": imageUri
-         },
-         {
-           "type": "button",
-           "text": {
-             "type": "plain_text",
-             "text": "Crop"
-           },
-           "action_id": "crop",
-           "value": imageUri
-         },
-         {
-           "type": "button",
-           "text": {
-             "type": "plain_text",
-             "text": "Reduce Quality"
-           },
-           "action_id": "reduce_quality",
-           "value": imageUri
-         }
-       ]
-     }
-   ]
- });
+  await respond(imageEditingView.view(imageUri));
 }
 
 app.action('resize', async ({ payload, client, ack, respond }) => {
