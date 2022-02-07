@@ -1,5 +1,5 @@
 const options =  {
-  animated: true
+  animated: true // Maintains animation of images
 };
 
 module.exports = { options }

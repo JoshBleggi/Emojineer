@@ -6,8 +6,6 @@ const imageEditingOptions = require('./options/imageEditingOptions.js')
 const appOptions = require('./options/appOptions.js')
 const urlUtility = require('./utility/urlUtility.js')
 
-/* This class is the entrypoint for the App */
-
 // Initialize app with tokens
 const app = new App(appOptions.options);
 
@@ -21,7 +19,7 @@ app.command('/addemoji', async ({ payload, ack, respond }) => {
     return;
   }
 
-  //Validate whether URL is in the proper format
+  // Validate whether URL is in the proper format
   let urlRef = { 
     url: ""
   };
@@ -39,15 +37,21 @@ app.command('/addemoji', async ({ payload, ack, respond }) => {
 });
 
 app.action('resize', async ({ payload, client, ack, respond }) => {
+  // Acknowledge command request
   await ack();
+  // Delete the message that was clicked
   await deleteOriginalEphemeralMessage(respond);
   
   try {
+    // Fetch the previous image for editing
     axios.get(payload.value, {
       responseType: 'arraybuffer'
     })
     .then(res => {
+      // Buffer data
       var imageBuffer = Buffer.from(res.data, 'binary');
+
+      // Load data into Sharp for resizing
       sharp(imageBuffer, imageEditingOptions.options)
       .resize({ width: 128, height: 128, fit: "inside" })
       .toBuffer(async (err, buffer) => { 
@@ -55,6 +59,7 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
           throw err;
         }
 
+        // Upload the image so that it can be displayed 
         var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
         imageTooLarge(respond, publicImageURL);
       });
@@ -66,26 +71,33 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
 });
 
 app.action('crop', async ({ payload, client, ack, respond }) => {
+  // Acknowledge command request
   await ack();
+  // Delete the message that was clicked
   await deleteOriginalEphemeralMessage(respond);
   
   try {
+    // Fetch the previous image for editing
     axios.get(payload.value, {
       responseType: 'arraybuffer'
     })
     .then(async (res) => {
+      // Buffer data
       var imageBuffer = Buffer.from(res.data, 'binary');
       
+      // Load data into Sharp for crop
       var image = sharp(imageBuffer, imageEditingOptions.options);
       var imageMetadata = await image.metadata();
+      // Find our minimum constraint for square cropping
       var minDimension = Math.min(imageMetadata.width, imageMetadata.height);
 
-      image.resize(minDimension, minDimension)
+      image.resize(minDimension, minDimension) // Default crop behavior centers the image
       .toBuffer(async (err, buffer) => { 
         if (err) {
           throw err;
         }
 
+        // Upload the image so that it can be displayed 
         var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
         imageTooLarge(respond, publicImageURL);
       });
@@ -97,16 +109,27 @@ app.action('crop', async ({ payload, client, ack, respond }) => {
 });
 
 app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
+  // Acknowledge command request
   await ack();
+  // Delete the message that was clicked
   await deleteOriginalEphemeralMessage(respond);
   
   try {
+    // Fetch the previous image for editing
     axios.get(payload.value, {
       responseType: 'arraybuffer'
     })
     .then(async (res)  => {
+      // Buffer data
       var imageBuffer = Buffer.from(res.data, 'binary');
+
+      // Load data into Sharp for quality reduction
       sharp(imageBuffer, imageEditingOptions.options)
+      /* 
+      Sharp applies quality modification at the type level. 
+      Most common types are listed. 
+      Force == false prevents type conversion 
+      */
       .jpeg({ quality: 75, force: false })
       .png({ quality: 75, force: false })
       .webp({ quality: 75, force: false })
@@ -116,6 +139,7 @@ app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
           throw err;
         }
 
+        // Upload the image so that it can be displayed 
         var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
         imageTooLarge(respond, publicImageURL);
       });
@@ -137,6 +161,7 @@ async function deleteOriginalEphemeralMessage(respond) {
   })
 }
 
+// Entrypoint into the app
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);

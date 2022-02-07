@@ -1,5 +1,6 @@
 function tryParseUrl(text, urlRef) {
     try {
+      //Constructor will throw an exception if text is not in the valid form
       urlRef.url = new URL(text);
     }
     catch (ex) {
