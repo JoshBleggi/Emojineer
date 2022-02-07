@@ -38,10 +38,6 @@ app.command('/addemoji', async ({ payload, ack, respond }) => {
   }
 });
 
-async function imageTooLarge(respond, imageUrl) {
-  await respond(imageEditingView.view(imageUrl));
-}
-
 app.action('resize', async ({ payload, client, ack, respond }) => {
   await ack();
   await deleteOriginalEphemeralMessage(respond);
@@ -129,6 +125,10 @@ app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
     respond(`An error was experienced during the operation: ${err}`)
   }
 });
+
+async function imageTooLarge(respond, imageUrl) {
+  await respond(imageEditingView.view(imageUrl));
+}
 
 async function deleteOriginalEphemeralMessage(respond) {
   await respond({
