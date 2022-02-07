@@ -53,7 +53,8 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
 
       // Load data into Sharp for resizing
       sharp(imageBuffer, imageEditingOptions.options)
-      .resize({ width: 128, height: 128, fit: "inside" })
+      // fit == "inside" constrains the largest dimensions to the ones specified and maintains the aspect ratio of the image
+      .resize({ width: 128, height: 128, fit: "inside" }) 
       .toBuffer(async (err, buffer) => { 
         if (err) {
           throw err;
