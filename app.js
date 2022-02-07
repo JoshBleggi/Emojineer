@@ -3,14 +3,11 @@ const sharp = require('sharp');
 const axios = require('axios')
 const imageEditingView = require('./views/imageEditingView.js')
 const imageEditingOptions = require('./options/imageEditingOptions.js')
+const appOptions = require('./options/appOptions.js')
 
 // Entrypoint for App
 // Initialize app with tokens
-const app = new App({
-  socketMode: true,
-  token: process.env.SLACK_BOT_TOKEN,
-  appToken: process.env.SLACK_APP_TOKEN
-});
+const app = new App(appOptions.options);
 
 const userToken = process.env.SLACK_USER_TOKEN;
 
