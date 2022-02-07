@@ -4,41 +4,42 @@ const axios = require('axios')
 const imageEditingView = require('./views/imageEditingView.js')
 const imageEditingOptions = require('./options/imageEditingOptions.js')
 const appOptions = require('./options/appOptions.js')
+const urlUtility = require('./utility/urlUtility.js')
 
-// Entrypoint for App
+/* This class is the entrypoint for the App */
+
 // Initialize app with tokens
 const app = new App(appOptions.options);
-
-const userToken = process.env.SLACK_USER_TOKEN;
 
 app.command('/addemoji', async ({ payload, ack, respond }) => {
   // Acknowledge command request
   await ack();
 
+  //Validate text was passed
   if (!payload.text) {
     await respond(`A URL to the source image must be included`);
     return;
   }
 
-  let sourceUri;
-  try {
-    sourceUri = new URL(payload.text);
-  }
-  catch (ex) {
+  //Validate whether URL is in the proper format
+  let urlRef = { 
+    url: ""
+  };
+  if (!urlUtility.tryParseUrl(payload.text, urlRef)) {
     await respond(`Source image URL must be valid`);
     return;
   }
   
   try {
-    await imageTooLarge(respond, sourceUri);
+    await imageTooLarge(respond, urlRef.url);
   }
   catch (ex) {
     await respond(`Something went wrong. Please make sure your URL redirects to an image.`);
   }
 });
 
-async function imageTooLarge(respond, imageUri) {
-  await respond(imageEditingView.view(imageUri));
+async function imageTooLarge(respond, imageUrl) {
+  await respond(imageEditingView.view(imageUrl));
 }
 
 app.action('resize', async ({ payload, client, ack, respond }) => {
@@ -58,7 +59,7 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
           throw err;
         }
 
-        var publicImageURL = await uploadImageToPublicURL(client, buffer);
+        var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
         imageTooLarge(respond, publicImageURL);
       });
     })
@@ -89,7 +90,7 @@ app.action('crop', async ({ payload, client, ack, respond }) => {
           throw err;
         }
 
-        var publicImageURL = await uploadImageToPublicURL(client, buffer);
+        var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
         imageTooLarge(respond, publicImageURL);
       });
     })
@@ -119,7 +120,7 @@ app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
           throw err;
         }
 
-        var publicImageURL = await uploadImageToPublicURL(client, buffer);
+        var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
         imageTooLarge(respond, publicImageURL);
       });
     })
@@ -134,27 +135,6 @@ async function deleteOriginalEphemeralMessage(respond) {
     "response_type" : "ephemeral",
     "delete_original" : true
   })
-}
-
-async function uploadImageToPublicURL(client, buffer) {
-  //Following unofficial method of resharing a method without making it public https://stackoverflow.com/a/58189401/1413199
-  let uploadResult = await client.files.upload({
-    token: userToken,
-    file: buffer
-  });
-
-  let shareResult = await client.files.sharedPublicURL({
-    token: userToken,
-    file: uploadResult.file.id
-  });
-
-  return constructDirectImageURLFromFile(shareResult.file);
-}
-
-function constructDirectImageURLFromFile(file) {
-  //Following unofficial method of constructing direct link to image https://stackoverflow.com/a/57254520/1413199
-  var permalinkElements = file.permalink_public.split('-');
-  return new URL(`${file.url_private}?pub_secret=${permalinkElements[permalinkElements.length - 1]}`)
 }
 
 (async () => {
