@@ -47,7 +47,7 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
     axios.get(payload.value, {
       responseType: 'arraybuffer'
     })
-    .then(res => {
+    .then((res) => {
       // Buffer data
       var imageBuffer = Buffer.from(res.data, 'binary');
 
