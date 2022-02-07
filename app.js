@@ -2,6 +2,7 @@ const { App } = require('@slack/bolt');
 const sharp = require('sharp');
 const axios = require('axios')
 const imageEditingView = require('./views/imageEditingView.js')
+const imageEditingOptions = require('./options/imageEditingOptions.js')
 
 // Entrypoint for App
 // Initialize app with tokens
@@ -12,10 +13,6 @@ const app = new App({
 });
 
 const userToken = process.env.SLACK_USER_TOKEN;
-
-const imageEditingOptions = {
-  animated: true
-};
 
 app.command('/addemoji', async ({ payload, ack, respond }) => {
   // Acknowledge command request
@@ -57,7 +54,7 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
     })
     .then(res => {
       var imageBuffer = Buffer.from(res.data, 'binary');
-      sharp(imageBuffer, imageEditingOptions)
+      sharp(imageBuffer, imageEditingOptions.options)
       .resize({ width: 128, height: 128, fit: "inside" })
       .toBuffer(async (err, buffer) => { 
         if (err) {
@@ -85,7 +82,7 @@ app.action('crop', async ({ payload, client, ack, respond }) => {
     .then(async (res) => {
       var imageBuffer = Buffer.from(res.data, 'binary');
       
-      var image = sharp(imageBuffer, imageEditingOptions);
+      var image = sharp(imageBuffer, imageEditingOptions.options);
       var imageMetadata = await image.metadata();
       var minDimension = Math.min(imageMetadata.width, imageMetadata.height);
 
@@ -115,7 +112,7 @@ app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
     })
     .then(async (res)  => {
       var imageBuffer = Buffer.from(res.data, 'binary');
-      sharp(imageBuffer, imageEditingOptions)
+      sharp(imageBuffer, imageEditingOptions.options)
       .jpeg({ quality: 75, force: false })
       .png({ quality: 75, force: false })
       .webp({ quality: 75, force: false })
