@@ -1,7 +1,7 @@
-function tryParseUrl(text, urlRef) {
+function tryParseUrl(text) {
     try {
       //Constructor will throw an exception if text is not in the valid form
-      urlRef.url = new URL(text);
+      new URL(text);
     }
     catch (ex) {
       return false;
@@ -23,7 +23,7 @@ async function uploadImageToPublicURL(client, buffer) {
       file: uploadResult.file.id
     });
   
-    return constructDirectImageURLFromFile(shareResult.file);
+    return constructDirectImageURLFromFile(shareResult.file).toString();
   }
   
   function constructDirectImageURLFromFile(file) {

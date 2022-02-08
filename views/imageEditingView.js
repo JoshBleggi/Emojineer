@@ -1,4 +1,4 @@
-function view(imageUrl) {
+function view(imageUrl, payload) {
   return {
     blocks: [
      {
@@ -23,7 +23,7 @@ function view(imageUrl) {
              "text": "Resize"
            },
            "action_id": "resize",
-           "value": imageUrl
+           "value": payload
          },
          {
            "type": "button",
@@ -32,7 +32,7 @@ function view(imageUrl) {
              "text": "Crop"
            },
            "action_id": "crop",
-           "value": imageUrl
+           "value": payload
          },
          {
            "type": "button",
@@ -41,7 +41,7 @@ function view(imageUrl) {
              "text": "Reduce Quality"
            },
            "action_id": "reduce_quality",
-           "value": imageUrl
+           "value": payload
          }
        ]
      }

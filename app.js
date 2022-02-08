@@ -9,31 +9,26 @@ const urlUtility = require('./utility/urlUtility.js')
 // Initialize app with tokens
 const app = new App(appOptions.options);
 
-app.command('/addemoji', async ({ payload, ack, respond }) => {
+const userToken = process.env.SLACK_USER_TOKEN;
+
+app.command('/addemoji', async ({ payload, client, ack, respond }) => {
   // Acknowledge command request
   await ack();
 
+  let params = parseParams(payload.text);
   //Validate text was passed
-  if (!payload.text) {
-    await respond(`A URL to the source image must be included`);
+  if (!params?.urlText || !params.emojiName) {
+    await respond('A URL to the source image and the name of the Emoji must be included.\nProper usage: \'/addemoji [imageUrl] [emojiName]\'');
     return;
   }
 
   // Validate whether URL is in the proper format
-  let urlRef = { 
-    url: ""
-  };
-  if (!urlUtility.tryParseUrl(payload.text, urlRef)) {
-    await respond(`Source image URL must be valid`);
+  if (!urlUtility.tryParseUrl(params.urlText)) {
+    await respond('Source image URL must be valid');
     return;
   }
-  
-  try {
-    await imageTooLarge(respond, urlRef.url);
-  }
-  catch (ex) {
-    await respond(`Something went wrong. Please make sure your URL redirects to an image.`);
-  }
+
+  await attemptUpload(client, respond, params.urlText, params.emojiName);
 });
 
 app.action('resize', async ({ payload, client, ack, respond }) => {
@@ -42,9 +37,10 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
   // Delete the message that was clicked
   await deleteOriginalEphemeralMessage(respond);
   
+  let params = parseParams(payload.value);
   try {
     // Fetch the previous image for editing
-    axios.get(payload.value, {
+    axios.get(params.urlText, {
       responseType: 'arraybuffer'
     })
     .then((res) => {
@@ -61,8 +57,9 @@ app.action('resize', async ({ payload, client, ack, respond }) => {
         }
 
         // Upload the image so that it can be displayed 
-        var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
-        imageTooLarge(respond, publicImageURL);
+        var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
+
+        await attemptUpload(client, respond, imageUrlString, params.emojiName);
       });
     })
   }
@@ -76,10 +73,11 @@ app.action('crop', async ({ payload, client, ack, respond }) => {
   await ack();
   // Delete the message that was clicked
   await deleteOriginalEphemeralMessage(respond);
-  
+
+  let params = parseParams(payload.value);
   try {
     // Fetch the previous image for editing
-    axios.get(payload.value, {
+    axios.get(params.urlText, {
       responseType: 'arraybuffer'
     })
     .then(async (res) => {
@@ -99,8 +97,9 @@ app.action('crop', async ({ payload, client, ack, respond }) => {
         }
 
         // Upload the image so that it can be displayed 
-        var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
-        imageTooLarge(respond, publicImageURL);
+        var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
+
+        await attemptUpload(client, respond, imageUrlString, params.emojiName);
       });
     })
   }
@@ -115,9 +114,10 @@ app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
   // Delete the message that was clicked
   await deleteOriginalEphemeralMessage(respond);
   
+  let params = parseParams(payload.value);
   try {
     // Fetch the previous image for editing
-    axios.get(payload.value, {
+    axios.get(params.urlText, {
       responseType: 'arraybuffer'
     })
     .then(async (res)  => {
@@ -141,8 +141,9 @@ app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
         }
 
         // Upload the image so that it can be displayed 
-        var publicImageURL = await urlUtility.uploadImageToPublicURL(client, buffer);
-        imageTooLarge(respond, publicImageURL);
+        var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
+
+        await attemptUpload(client, respond, imageUrlString, params.emojiName);
       });
     })
   }
@@ -151,8 +152,44 @@ app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
   }
 });
 
-async function imageTooLarge(respond, imageUrl) {
-  await respond(imageEditingView.view(imageUrl));
+async function attemptUpload(client, respond, urlText, emojiName) {
+  try {
+    await client.admin.emoji.add({
+      token: userToken,
+      url: urlText,
+      name: emojiName
+    });
+    await respond('Emoji uploaded successfully');
+    return;
+  } catch (err) { 
+    switch (err.data.error) {
+      case 'resized_but_still_too_large':
+      case 'error_too_big':
+      case 'error_bad_wide':
+        await imageTooLarge(respond, urlText, emojiName);
+        break;
+      case 'not_an_admin':
+          await respond('You will need to send this emoji to an admin for approval');
+          //TODO: Admin stuff
+          break;
+      case 'error_bad_name_i18n':
+      case 'error_name_taken':
+      case 'error_name_taken_i18n':
+        await respond('There was an issue with the provided name. Please choose another');
+        break;
+      case 'no_image_uploaded':
+        await respond('No image was found at the provided URL. Please make sure it is the public URL of an image');
+        break;
+      default:
+        await respond('An unknown error occurred while attempting to add the emoji');
+        console.error(err);
+    }
+  }
+}
+
+async function imageTooLarge(respond, urlText, emojiName) {
+  var payload = `${urlText} ${emojiName}`;
+  await respond(imageEditingView.view(urlText, payload));
 }
 
 async function deleteOriginalEphemeralMessage(respond) {
@@ -160,6 +197,14 @@ async function deleteOriginalEphemeralMessage(respond) {
     "response_type" : "ephemeral",
     "delete_original" : true
   })
+}
+
+function parseParams(payloadText) {
+  let splitParams = payloadText?.split(' ');
+  return {
+    urlText: splitParams[0],
+    emojiName: splitParams[1]
+  }
 }
 
 // Entrypoint into the app
