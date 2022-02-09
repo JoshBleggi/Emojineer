@@ -1,15 +1,25 @@
 const { App } = require('@slack/bolt');
 const express = require('express');
+const bodyParser = require('body-parser');
 const appOptions = require('./options/appOptions.js');
 const subscribers = require('./subscribers');
-const submit = require('./api/routes/submit.js');
+const emoji = require('./api/routes/emoji.js');
 
 // Initialize app with tokens
 const app = new App(appOptions.options);
 subscribers(app);
 
 const api = new express();
-submit(app, api);
+
+api.use(
+  express.urlencoded({
+    extended: true
+  })
+)
+
+api.use(bodyParser.json())
+
+emoji(app, api);
 
 // Entrypoint into the app
 (async () => {
