@@ -1,6 +1,6 @@
 const sharp = require('sharp');
 const axios = require('axios');
-const imageEditingView = require('../views/imageEditingView.js');
+const imageEditingView = require('../views/personalImageEditingView.js');
 const imageEditingOptions = require('../options/imageEditingOptions.js');
 const urlUtility = require('../utility/urlUtility.js');
 

@@ -3,23 +3,23 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const appOptions = require('./options/appOptions.js');
 const subscribers = require('./subscribers');
-const emoji = require('./api/routes/emoji.js');
+const emojiController = require('./api/routes/emoji.js');
+const emojiHandlerClass = require('./services/emojiHandler.js');
 
 // Initialize app with tokens
 const app = new App(appOptions.options);
 subscribers(app);
 
-const api = new express();
+const emojiHandler = new emojiHandlerClass(app.client);
 
+const api = new express();
 api.use(
   express.urlencoded({
     extended: true
   })
 )
-
 api.use(bodyParser.json())
-
-emoji(app, api);
+emojiController(api, emojiHandler);
 
 // Entrypoint into the app
 (async () => {
