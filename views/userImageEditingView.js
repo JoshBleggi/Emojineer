@@ -1,6 +1,6 @@
-function view(imageUrl, payload) {
-  return {
-    blocks: [
+function view(imageUrl, emojiName) {
+  var payload = `${imageUrl} ${emojiName}`;
+  return [
      {
        "type": "section",
        "text": {
@@ -45,8 +45,7 @@ function view(imageUrl, payload) {
          }
        ]
      }
-   ]
- };
+   ];
 }
 
 module.exports = { view };

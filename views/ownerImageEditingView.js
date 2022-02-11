@@ -1,8 +1,6 @@
-function view(channelId, urlText, emojiName) {
+function view(urlText, emojiName) {
   var payload = `${urlText} ${emojiName}`;
-  return {
-    channel: channelId,
-    blocks: [
+  return [
      {
        "type": "section",
        "text": {
@@ -67,8 +65,7 @@ function view(channelId, urlText, emojiName) {
          }
        ]
      }
-   ]
- };
+   ];
 }
 
 module.exports = { view };

@@ -18,7 +18,12 @@ class EmojiHandler {
             "return_im": false
         })).channel.id;
 
-        await this.slackClient.chat.postMessage(ownerImageEditingView.view(channelId, imageUrl, emojiName));
+        await this.slackClient.chat.postEphemeral({
+            channel: channelId,
+            user: primaryOwner.id,
+            text: `An image has been submitted under the name :${emojiName}:. Please select an action.`,
+            blocks: ownerImageEditingView.view(imageUrl, emojiName)
+        });
     }
 }
 
