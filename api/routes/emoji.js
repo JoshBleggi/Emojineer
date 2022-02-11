@@ -35,11 +35,10 @@ function configureRoutes(api, emojiHandler) {
   });
 
   route.get('/:name', async (req, res) => {
-    let emojiName = req.params?.name?.toLowerCase();
+    //Emoji names are always lower case
+    let emojiName = req.params.name.toLowerCase();
 
-    if (!emojiName) {
-      return res.status(400).json({ error: 'An emojiName must be included in the route' });
-    }
+    //No need to validate the parameter as it must be included to trigger the route
 
     let emoji;
     try {
