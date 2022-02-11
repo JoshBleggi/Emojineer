@@ -25,7 +25,8 @@ function configureRoutes(api, emojiHandler) {
     }
 
     try {
-      await emojiHandler.submitEmojiForApproval(req.body.teamId, req.body.imageUrl, req.body.emojiName);
+      //Emoji names must be lower case
+      await emojiHandler.submitEmojiForApproval(req.body.teamId, req.body.imageUrl, req.body.emojiName.toLowerCase());
     } catch {
       return res.status(500).json({ error: 'An internal server error has occurred' });
     }
