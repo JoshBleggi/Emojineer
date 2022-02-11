@@ -1,16 +1,16 @@
-function view(urlText, emojiName) {
-  var payload = `${urlText} ${emojiName}`;
-  return [
+function view(imageUrl, payload) {
+  return {
+    blocks: [
      {
        "type": "section",
        "text": {
          "type": "plain_text",
-         "text": `An image has been submitted under the name :${emojiName}:. Please select an action.`
+         "text": `Your image is too large for Slack to import automatically. Would you like to modify it?`
        }
      },
      {
       "type": "image",
-      "image_url": urlText,
+      "image_url": imageUrl,
       "alt_text": "Possible future Emoji"
      },
      {
@@ -42,30 +42,11 @@ function view(urlText, emojiName) {
            },
            "action_id": "reduce_quality",
            "value": payload
-         },
-         {
-           "type": "button",
-           "text": {
-             "type": "plain_text",
-             "text": "Approve"
-           },
-           "style": "primary",
-           "action_id": "approve",
-           "value": payload
-         },
-         {
-           "type": "button",
-           "text": {
-             "type": "plain_text",
-             "text": "Deny"
-           },
-           "style": "danger",
-           "action_id": "deny",
-           "value": payload
          }
        ]
      }
-   ];
+   ]
+ };
 }
 
 module.exports = { view };
