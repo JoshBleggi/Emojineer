@@ -1,13 +1,14 @@
 const sharp = require('sharp');
 const axios = require('axios');
-const imageEditingView = require('../views/imageEditingView.js');
+const userImageEditingView = require('../views/userImageEditingView.js');
+const ownerImageEditingView = require('../views/ownerImageEditingView.js');
 const imageEditingOptions = require('../options/imageEditingOptions.js');
 const urlUtility = require('../utility/urlUtility.js');
 
 const userToken = process.env.SLACK_USER_TOKEN;
 
 function loadListeners(app) {
-    app.command('/addemoji', async ({ payload, client, ack, respond }) => {
+    app.command('/addemoji', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
 
@@ -24,10 +25,10 @@ function loadListeners(app) {
         return;
     }
 
-    await attemptUpload(client, respond, params.urlText, params.emojiName);
+    await attemptUpload(client, respond, body.user_id, params.urlText, params.emojiName);
     });
 
-    app.action('resize', async ({ payload, client, ack, respond }) => {
+    app.action('resize', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
     // Delete the message that was clicked
@@ -55,7 +56,7 @@ function loadListeners(app) {
             // Upload the image so that it can be displayed 
             var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
 
-            await attemptUpload(client, respond, imageUrlString, params.emojiName);
+            await attemptUpload(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
         })
     }
@@ -64,7 +65,7 @@ function loadListeners(app) {
     }
     });
 
-    app.action('crop', async ({ payload, client, ack, respond }) => {
+    app.action('crop', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
     // Delete the message that was clicked
@@ -95,7 +96,7 @@ function loadListeners(app) {
             // Upload the image so that it can be displayed 
             var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
 
-            await attemptUpload(client, respond, imageUrlString, params.emojiName);
+            await attemptUpload(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
         })
     }
@@ -104,7 +105,7 @@ function loadListeners(app) {
     }
     });
 
-    app.action('reduce_quality', async ({ payload, client, ack, respond }) => {
+    app.action('reduce_quality', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
     // Delete the message that was clicked
@@ -139,7 +140,7 @@ function loadListeners(app) {
             // Upload the image so that it can be displayed 
             var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
 
-            await attemptUpload(client, respond, imageUrlString, params.emojiName);
+            await attemptUpload(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
         })
     }
@@ -149,7 +150,7 @@ function loadListeners(app) {
     });
 }
 
-async function attemptUpload(client, respond, urlText, emojiName) {
+async function attemptUpload(client, respond, userId, urlText, emojiName) {
   try {
     await client.admin.emoji.add({
       token: userToken,
@@ -163,7 +164,7 @@ async function attemptUpload(client, respond, urlText, emojiName) {
       case 'resized_but_still_too_large':
       case 'error_too_big':
       case 'error_bad_wide':
-        await imageTooLarge(respond, urlText, emojiName);
+        await imageTooLarge(client, respond, userId, urlText, emojiName);
         break;
       case 'not_an_admin':
           await respond('You will need to send this emoji to an admin for approval');
@@ -184,9 +185,19 @@ async function attemptUpload(client, respond, urlText, emojiName) {
   }
 }
 
-async function imageTooLarge(respond, urlText, emojiName) {
-  var payload = `${urlText} ${emojiName}`;
-  await respond(imageEditingView.view(urlText, payload));
+async function imageTooLarge(client, respond, userId, urlText, emojiName) {
+  let userIsAdmin = (await client.users.info({ user: userId })).user.is_admin;
+  if (userIsAdmin) {
+    await respond({
+      text: `An image has been submitted under the name :${emojiName}:. Please select an action.`,
+      blocks: ownerImageEditingView.view(urlText, emojiName)
+    })
+  } else {
+    await respond({
+      text: "Your image is too large for Slack to import automatically. Would you like to modify it?",
+      blocks: userImageEditingView.view(urlText, emojiName)
+    });
+  }
 }
 
 async function deleteOriginalEphemeralMessage(respond) {
