@@ -11,20 +11,24 @@ function configureRoutes(api, emojiHandler) {
 
     //Validate parameters were passed
     if (!req.body?.teamId || !req.body.imageUrl || !req.body.emojiName) {
-      return res.json({ error: `The destination TeamId, URL to the source image, and the name of the Emoji must be included. Example body:
+      return res.status(400).json({ error: `The destination TeamId, URL to the source image, and the name of the Emoji must be included. Example body:
       {
         "teamId": "T1234567890",
         "imageUrl": "https://www.website.com/image.gif",
         "emojiName": "cool_emoji"
-      }` }).status(400);
+      }` });
     }
 
     // Validate whether URL is in the proper format
     if (!urlUtility.tryParseUrl(req.body.imageUrl)) {
-      return res.json({ error: 'Source image URL must be valid' }).status(400);
+      return res.status(400).json({ error: 'Source image URL must be valid' });
     }
 
-    await emojiHandler.submitEmojiForApproval(req.body.teamId, req.body.imageUrl, req.body.emojiName);
+    try {
+      await emojiHandler.submitEmojiForApproval(req.body.teamId, req.body.imageUrl, req.body.emojiName);
+    } catch {
+      return res.status(500).json({ error: 'An internal server error has occurred' });
+    }
 
     return res.status(202).end();
   });
