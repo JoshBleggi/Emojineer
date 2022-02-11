@@ -1,5 +1,7 @@
 const ownerImageEditingView = require('../views/ownerImageEditingView.js');
 
+const userToken = process.env.SLACK_USER_TOKEN;
+
 class EmojiHandler {
     slackClient;
 
@@ -24,6 +26,10 @@ class EmojiHandler {
             text: `An image has been submitted under the name :${emojiName}:. Please select an action.`,
             blocks: ownerImageEditingView.view(imageUrl, emojiName)
         });
+    }
+
+    async getEmoji(emojiName) {
+        return (await this.slackClient.admin.emoji.list({ token: userToken })).emoji[emojiName];
     }
 }
 

@@ -29,14 +29,25 @@ function configureRoutes(api, emojiHandler) {
     return res.status(202).end();
   });
 
-  route.get('/:name', (req, res) => {
+  route.get('/:name', async (req, res) => {
     let emojiName = req.params?.name?.toLowerCase();
 
     if (!emojiName) {
-      return res.json({ error: 'An emojiName must be included in the route' }).status(400);
+      return res.status(400).json({ error: 'An emojiName must be included in the route' });
     }
 
-    return res.status(200).end();
+    let emoji;
+    try {
+      emoji = await emojiHandler.getEmoji(emojiName);
+    } catch {
+      return res.status(500).json({ error: 'An internal server error has occurred' });
+    }
+
+    if (emoji) {
+      return res.status(200).json(emoji);
+    }
+
+    return res.status(404).json({ error: 'Resource not found' });
   });
 }
 
