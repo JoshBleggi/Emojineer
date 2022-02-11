@@ -25,7 +25,7 @@ function loadListeners(app) {
         return;
     }
 
-    await attemptUpload(client, respond, params.urlText, params.emojiName);
+    await attemptUpload(client, respond, body.user_id, params.urlText, params.emojiName);
     });
 
     app.action('resize', async ({ payload, body, client, ack, respond }) => {
