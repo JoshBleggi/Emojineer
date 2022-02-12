@@ -56,7 +56,7 @@ function loadListeners(app) {
             // Upload the image so that it can be displayed 
             var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
 
-            await attemptUpload(client, respond, body.user.id, imageUrlString, params.emojiName);
+            await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
         })
     }
@@ -98,7 +98,7 @@ function loadListeners(app) {
 
             await attemptUpload(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
-        })
+      })
     }
     catch (err) {
         respond(`An error was experienced during the operation: ${err}`)
@@ -147,7 +147,35 @@ function loadListeners(app) {
     catch (err) {
         respond(`An error was experienced during the operation: ${err}`)
     }
-    });
+  });
+
+  app.action('upload', async ({ payload, body, client, ack, respond }) => {
+    // Acknowledge command request
+    await ack();
+    // Delete the message that was clicked
+    await deleteOriginalEphemeralMessage(respond);
+    
+    let params = parseParams(payload.value);
+    await attemptUpload(client, respond, body.user.id, params.urlText, params.emojiName);
+  });
+
+  app.action('submit', async ({ payload, body, ack, respond }) => {
+    // Acknowledge command request
+    await ack();
+    // Delete the message that was clicked
+    await deleteOriginalEphemeralMessage(respond);
+    
+    let params = parseParams(payload.value);
+    //TODO: First param should be TeamId
+    await emojiHandler.submitEmojiForApproval(body.user.id, params.urlText, params.emojiName);
+  });
+
+  app.action('cancel', async ({ ack, respond }) => {
+    // Acknowledge command request
+    await ack();
+    // Delete the message that was clicked
+    await deleteOriginalEphemeralMessage(respond);
+  });
 }
 
 async function attemptUpload(client, respond, userId, urlText, emojiName) {
@@ -166,10 +194,6 @@ async function attemptUpload(client, respond, userId, urlText, emojiName) {
       case 'error_bad_wide':
         await imageTooLarge(client, respond, userId, urlText, emojiName);
         break;
-      case 'not_an_admin':
-          await respond('You will need to send this emoji to an admin for approval');
-          //TODO: Admin stuff
-          break;
       case 'error_bad_name_i18n':
       case 'error_name_taken':
       case 'error_name_taken_i18n':
@@ -189,12 +213,12 @@ async function imageTooLarge(client, respond, userId, urlText, emojiName) {
   let userIsAdmin = (await client.users.info({ user: userId })).user.is_admin;
   if (userIsAdmin) {
     await respond({
-      text: `An image has been submitted under the name :${emojiName}:. Please select an action.`,
+      text: "Edit your image before uploading it to your Emoji Library",
       blocks: ownerImageEditingView.view(urlText, emojiName)
     })
   } else {
     await respond({
-      text: "Your image is too large for Slack to import automatically. Would you like to modify it?",
+      text: "Edit your image before submitting it for approval",
       blocks: userImageEditingView.view(urlText, emojiName)
     });
   }
