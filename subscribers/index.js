@@ -47,7 +47,7 @@ function loadListeners(app, emojiHandler) {
         // Load data into Sharp for resizing
         sharp(imageBuffer, imageEditingOptions.options)
         // fit == "inside" constrains the largest dimensions to the ones specified and maintains the aspect ratio of the image
-        .resize({ width: 128, height: 128, fit: "inside" }) 
+        .resize({ width: 64, height: 64, fit: "inside" }) 
         .toBuffer(async (err, buffer) => { 
             if (err) {
             throw err;
