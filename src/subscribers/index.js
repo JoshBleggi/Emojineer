@@ -107,8 +107,8 @@ function loadListeners(app, imageEditor, emojiHandler) {
     await deleteOriginalEphemeralMessage(respond);
     
     let params = parseParams(payload.value);
-    //TODO: First param should be TeamId
-    await emojiHandler.submitEmojiForApproval(body.user.id, params.urlText, params.emojiName);
+    //Send to workspace owner for approval
+    await emojiHandler.submitEmojiForApproval(body.user.team_id, params.urlText, params.emojiName);
   });
 
   app.action('cancel', async ({ ack, respond }) => {
