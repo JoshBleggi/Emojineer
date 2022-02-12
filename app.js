@@ -8,9 +8,9 @@ const emojiHandlerClass = require('./services/emojiHandler.js');
 
 // Initialize app with tokens
 const app = new App(appOptions.options);
-subscribers(app);
 
 const emojiHandler = new emojiHandlerClass(app.client);
+subscribers(app, emojiHandler);
 
 const api = new express();
 api.use(

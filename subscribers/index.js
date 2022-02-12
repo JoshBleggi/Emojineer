@@ -7,8 +7,8 @@ const urlUtility = require('../utility/urlUtility.js');
 
 const userToken = process.env.SLACK_USER_TOKEN;
 
-function loadListeners(app) {
-    app.command('/addemoji', async ({ payload, body, client, ack, respond }) => {
+function loadListeners(app, emojiHandler) {
+  app.command('/addemoji', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
 
