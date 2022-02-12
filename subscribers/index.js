@@ -28,7 +28,7 @@ function loadListeners(app, emojiHandler) {
     await imageModificationResponse(client, respond, body.user_id, params.urlText, params.emojiName);
   });
 
-    app.action('resize', async ({ payload, body, client, ack, respond }) => {
+  app.action('resize', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
     // Delete the message that was clicked
@@ -58,14 +58,14 @@ function loadListeners(app, emojiHandler) {
 
             await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
-        })
+      })
     }
     catch (err) {
         respond(`An error was experienced during the operation: ${err}`)
     }
-    });
+  });
 
-    app.action('crop', async ({ payload, body, client, ack, respond }) => {
+  app.action('crop', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
     // Delete the message that was clicked
@@ -103,9 +103,9 @@ function loadListeners(app, emojiHandler) {
     catch (err) {
         respond(`An error was experienced during the operation: ${err}`)
     }
-    });
+  });
 
-    app.action('reduce_quality', async ({ payload, body, client, ack, respond }) => {
+  app.action('reduce_quality', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
     // Delete the message that was clicked
@@ -142,7 +142,7 @@ function loadListeners(app, emojiHandler) {
 
             await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
-        })
+      })
     }
     catch (err) {
         respond(`An error was experienced during the operation: ${err}`)
