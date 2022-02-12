@@ -1,6 +1,5 @@
 const ownerImageEditingView = require('../views/ownerImageEditingView.js');
-
-const userToken = process.env.SLACK_USER_TOKEN;
+const tokens = require('../common/tokens.js');
 
 class EmojiHandler {
     slackClient;
@@ -29,7 +28,7 @@ class EmojiHandler {
     }
 
     async getEmoji(emojiName) {
-        return (await this.slackClient.admin.emoji.list({ token: userToken })).emoji[emojiName];
+        return (await this.slackClient.admin.emoji.list({ token: tokens.userToken })).emoji[emojiName];
     }
 }
 

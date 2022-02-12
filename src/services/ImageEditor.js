@@ -1,8 +1,7 @@
 const axios = require('axios');
 const sharp = require('sharp');
+const tokens = require('../common/tokens.js');
 const imageEditingOptions = require('../options/imageEditingOptions.js');
-
-const userToken = process.env.SLACK_USER_TOKEN;
 
 class ImageEditorService {
     slackClient;
@@ -96,7 +95,7 @@ class ImageEditorService {
     async attemptUpload(urlText, emojiName) {
         try {
             await this.slackClient.admin.emoji.add({
-                token: userToken,
+                token: tokens.userToken,
                 url: urlText,
                 name: emojiName
             });
@@ -121,17 +120,15 @@ class ImageEditorService {
         }
     }
 
-    uploadImageToPublicURL = async function(buffer) {
-        const userToken = process.env.SLACK_USER_TOKEN;
-    
+    uploadImageToPublicURL = async function(buffer) {    
         //Following unofficial method of resharing a method without making it public https://stackoverflow.com/a/58189401/1413199
         let uploadResult = await this.slackClient.files.upload({
-            token: userToken,
+            token: tokens.userToken,
             file: buffer
         });
         
         let shareResult = await this.slackClient.files.sharedPublicURL({
-            token: userToken,
+            token: tokens.userToken,
             file: uploadResult.file.id
         });
         
