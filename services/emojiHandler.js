@@ -23,7 +23,7 @@ class EmojiHandler {
         await this.slackClient.chat.postEphemeral({
             channel: channelId,
             user: primaryOwner.id,
-            text: `An image has been submitted under the name :${emojiName}:. Please select an action.`,
+            text: `An image has been submitted under the name :${emojiName}:`,
             blocks: ownerImageEditingView.view(imageUrl, emojiName)
         });
     }
