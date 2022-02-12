@@ -5,7 +5,8 @@ function view(imageUrl, emojiName) {
        "type": "section",
        "text": {
          "type": "plain_text",
-         "text": "Your image is too large for Slack to import automatically. Would you like to modify it?"
+         "text": `Would you like to modify your image before submitting it for approval? 
+A size of 128KB or less is ideal`
        }
      },
      {
@@ -41,6 +42,26 @@ function view(imageUrl, emojiName) {
              "text": "Reduce Quality"
            },
            "action_id": "reduce_quality",
+           "value": payload
+         },
+         {
+           "type": "button",
+           "text": {
+             "type": "plain_text",
+             "text": "Submit"
+           },
+           "style": "primary",
+           "action_id": "submit",
+           "value": payload
+         },
+         {
+           "type": "button",
+           "text": {
+             "type": "plain_text",
+             "text": "Cancel"
+           },
+           "style": "danger",
+           "action_id": "cancel",
            "value": payload
          }
        ]

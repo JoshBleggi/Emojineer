@@ -5,7 +5,8 @@ function view(urlText, emojiName) {
        "type": "section",
        "text": {
          "type": "plain_text",
-         "text": `An image has been submitted under the name :${emojiName}:. Please select an action.`
+         "text": `The following image is being added as an emoji under the name :${emojiName}:
+A size of 128kB or less is ideal. Please select an action`
        }
      },
      {
@@ -47,20 +48,20 @@ function view(urlText, emojiName) {
            "type": "button",
            "text": {
              "type": "plain_text",
-             "text": "Approve"
+             "text": "Upload"
            },
            "style": "primary",
-           "action_id": "approve",
+           "action_id": "upload",
            "value": payload
          },
          {
            "type": "button",
            "text": {
              "type": "plain_text",
-             "text": "Deny"
+             "text": "Cancel"
            },
            "style": "danger",
-           "action_id": "deny",
+           "action_id": "cancel",
            "value": payload
          }
        ]
