@@ -1,13 +1,8 @@
-const sharp = require('sharp');
-const axios = require('axios');
 const userImageEditingView = require('../views/userImageEditingView.js');
 const ownerImageEditingView = require('../views/ownerImageEditingView.js');
-const imageEditingOptions = require('../options/imageEditingOptions.js');
 const urlUtility = require('../utility/urlUtility.js');
 
-const userToken = process.env.SLACK_USER_TOKEN;
-
-function loadListeners(app, emojiHandler) {
+function loadListeners(app, imageEditor, emojiHandler) {
   app.command('/addemoji', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
     await ack();
@@ -36,32 +31,12 @@ function loadListeners(app, emojiHandler) {
     
     let params = parseParams(payload.value);
     try {
-        // Fetch the previous image for editing
-        axios.get(params.urlText, {
-        responseType: 'arraybuffer'
-        })
-        .then((res) => {
-        // Buffer data
-        var imageBuffer = Buffer.from(res.data, 'binary');
+      let imageUrlString = await imageEditor.resizeToPublicUrl(params.urlText);
 
-        // Load data into Sharp for resizing
-        sharp(imageBuffer, imageEditingOptions.options)
-        // fit == "inside" constrains the largest dimensions to the ones specified and maintains the aspect ratio of the image
-        .resize({ width: 64, height: 64, fit: "inside" }) 
-        .toBuffer(async (err, buffer) => { 
-            if (err) {
-            throw err;
-            }
-
-            // Upload the image so that it can be displayed 
-            var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
-
-            await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
-        });
-      })
+      await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
     }
     catch (err) {
-        respond(`An error was experienced during the operation: ${err}`)
+      respond(`An error was experienced during the operation: ${err}`)
     }
   });
 
@@ -73,32 +48,9 @@ function loadListeners(app, emojiHandler) {
 
     let params = parseParams(payload.value);
     try {
-        // Fetch the previous image for editing
-        axios.get(params.urlText, {
-        responseType: 'arraybuffer'
-        })
-        .then(async (res) => {
-        // Buffer data
-        var imageBuffer = Buffer.from(res.data, 'binary');
-        
-        // Load data into Sharp for crop
-        var image = sharp(imageBuffer, imageEditingOptions.options);
-        var imageMetadata = await image.metadata();
-        // Find our minimum constraint for square cropping
-        var minDimension = Math.min(imageMetadata.width, imageMetadata.height);
+      let imageUrlString = await imageEditor.cropToPublicUrl(params.urlText);  
 
-        image.resize(minDimension, minDimension) // Default crop behavior centers the image
-        .toBuffer(async (err, buffer) => { 
-            if (err) {
-            throw err;
-            }
-
-            // Upload the image so that it can be displayed 
-            var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
-
-            await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
-        });
-      })
+      await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
     }
     catch (err) {
         respond(`An error was experienced during the operation: ${err}`)
@@ -113,36 +65,9 @@ function loadListeners(app, emojiHandler) {
     
     let params = parseParams(payload.value);
     try {
-        // Fetch the previous image for editing
-        axios.get(params.urlText, {
-        responseType: 'arraybuffer'
-        })
-        .then(async (res)  => {
-        // Buffer data
-        var imageBuffer = Buffer.from(res.data, 'binary');
-
-        // Load data into Sharp for quality reduction
-        sharp(imageBuffer, imageEditingOptions.options)
-        /* 
-        Sharp applies quality modification at the type level. 
-        Most common types are listed. 
-        Force == false prevents type conversion 
-        */
-        .jpeg({ quality: 75, force: false })
-        .png({ quality: 75, force: false })
-        .webp({ quality: 75, force: false })
-        .gif({ colours: 128, force: false })
-        .toBuffer(async (err, buffer) => { 
-            if (err) {
-            throw err;
-            }
-
-            // Upload the image so that it can be displayed 
-            var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
-
-            await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
-        });
-      })
+      let imageUrlString = await imageEditor.reduceQualityToPublicUrl(params.urlText);  
+    
+      await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
     }
     catch (err) {
         respond(`An error was experienced during the operation: ${err}`)
@@ -156,7 +81,23 @@ function loadListeners(app, emojiHandler) {
     await deleteOriginalEphemeralMessage(respond);
     
     let params = parseParams(payload.value);
-    await attemptUpload(client, respond, body.user.id, params.urlText, params.emojiName);
+    let result = await imageEditor.attemptUpload(params.urlText, params.emojiName);
+    switch (result) {
+      case 'success':
+        await respond('Emoji uploaded successfully');
+        break;
+      case 'image_too_large_error':
+        await imageModificationResponse(client, respond, userId, urlText, emojiName);
+        break;
+      case 'name_error':
+        await respond('There was an issue with the provided name. Please choose another');
+        break;
+      case 'no_image_error':
+        await respond('No image was found at the provided URL. Please make sure it is the public URL of an image');
+        break;
+      default:
+        await respond('An unknown error occurred while attempting to add the emoji');
+    }
   });
 
   app.action('submit', async ({ payload, body, ack, respond }) => {
@@ -176,37 +117,6 @@ function loadListeners(app, emojiHandler) {
     // Delete the message that was clicked
     await deleteOriginalEphemeralMessage(respond);
   });
-}
-
-async function attemptUpload(client, respond, userId, urlText, emojiName) {
-  try {
-    await client.admin.emoji.add({
-      token: userToken,
-      url: urlText,
-      name: emojiName
-    });
-    await respond('Emoji uploaded successfully');
-    return;
-  } catch (err) { 
-    switch (err.data.error) {
-      case 'resized_but_still_too_large':
-      case 'error_too_big':
-      case 'error_bad_wide':
-        await imageModificationResponse(client, respond, userId, urlText, emojiName);
-        break;
-      case 'error_bad_name_i18n':
-      case 'error_name_taken':
-      case 'error_name_taken_i18n':
-        await respond('There was an issue with the provided name. Please choose another');
-        break;
-      case 'no_image_uploaded':
-        await respond('No image was found at the provided URL. Please make sure it is the public URL of an image');
-        break;
-      default:
-        await respond('An unknown error occurred while attempting to add the emoji');
-        console.error(err);
-    }
-  }
 }
 
 async function imageModificationResponse(client, respond, userId, urlText, emojiName) {

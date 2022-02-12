@@ -5,12 +5,15 @@ const appOptions = require('./options/appOptions.js');
 const subscribers = require('./subscribers');
 const emojiController = require('./api/routes/emoji.js');
 const emojiHandlerClass = require('./services/emojiHandler.js');
+const ImageEditorService = require('./services/imageEditor.js');
 
 // Initialize app with tokens
 const app = new App(appOptions.options);
 
+//Rudamentary dependency injection. Could be replaced by dedicated library.
+const imageEditor = new ImageEditorService(app.client);
 const emojiHandler = new emojiHandlerClass(app.client);
-subscribers(app, emojiHandler);
+subscribers(app, imageEditor, emojiHandler);
 
 const api = new express();
 api.use(
