@@ -8,16 +8,25 @@ features:
   bot_user:
     display_name: Emojineer
     always_online: true
+  slash_commands:
+    - command: /addemoji
+      description: Adds an Emoji to Slack
+      usage_hint: "[imageURL] [emojiName]"
+      should_escape: false
 oauth_config:
   scopes:
+    user:
+      - admin.teams:write
+      - files:write
+      - admin.teams:read
     bot:
       - channels:history
       - channels:join
-      - commands
       - chat:write
+      - commands
       - im:history
-    user:
-      - files:write
+      - users:read
+      - im:write
 settings:
   event_subscriptions:
     bot_events:
@@ -25,7 +34,6 @@ settings:
       - message.im
   interactivity:
     is_enabled: true
-  org_deploy_enabled: false
+  org_deploy_enabled: true
   socket_mode_enabled: true
-  is_hosted: false
   token_rotation_enabled: false
