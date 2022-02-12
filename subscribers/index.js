@@ -25,8 +25,8 @@ function loadListeners(app) {
         return;
     }
 
-    await attemptUpload(client, respond, body.user_id, params.urlText, params.emojiName);
-    });
+    await imageModificationResponse(client, respond, body.user_id, params.urlText, params.emojiName);
+  });
 
     app.action('resize', async ({ payload, body, client, ack, respond }) => {
     // Acknowledge command request
@@ -96,7 +96,7 @@ function loadListeners(app) {
             // Upload the image so that it can be displayed 
             var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
 
-            await attemptUpload(client, respond, body.user.id, imageUrlString, params.emojiName);
+            await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
       })
     }
@@ -140,7 +140,7 @@ function loadListeners(app) {
             // Upload the image so that it can be displayed 
             var imageUrlString = await urlUtility.uploadImageToPublicURL(client, buffer);
 
-            await attemptUpload(client, respond, body.user.id, imageUrlString, params.emojiName);
+            await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
         });
         })
     }
@@ -192,7 +192,7 @@ async function attemptUpload(client, respond, userId, urlText, emojiName) {
       case 'resized_but_still_too_large':
       case 'error_too_big':
       case 'error_bad_wide':
-        await imageTooLarge(client, respond, userId, urlText, emojiName);
+        await imageModificationResponse(client, respond, userId, urlText, emojiName);
         break;
       case 'error_bad_name_i18n':
       case 'error_name_taken':
@@ -209,7 +209,7 @@ async function attemptUpload(client, respond, userId, urlText, emojiName) {
   }
 }
 
-async function imageTooLarge(client, respond, userId, urlText, emojiName) {
+async function imageModificationResponse(client, respond, userId, urlText, emojiName) {
   let userIsAdmin = (await client.users.info({ user: userId })).user.is_admin;
   if (userIsAdmin) {
     await respond({
