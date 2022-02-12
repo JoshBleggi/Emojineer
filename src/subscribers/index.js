@@ -1,6 +1,6 @@
 const userImageEditingView = require('../views/userImageEditingView.js');
 const ownerImageEditingView = require('../views/ownerImageEditingView.js');
-const urlUtility = require('../utility/urlUtility.js');
+const urlUtility = require('../common/urlUtility.js');
 
 function loadListeners(app, imageEditor, emojiHandler) {
   app.command('/addemoji', async ({ payload, body, client, ack, respond }) => {

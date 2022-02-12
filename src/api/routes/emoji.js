@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const urlUtility = require('../../utility/urlUtility.js');
+const urlUtility = require('../../common/urlUtility.js');
 
 const route = Router();
 
