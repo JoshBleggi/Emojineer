@@ -1,27 +1,22 @@
-const axios = require('axios');
 const sharp = require('sharp');
 const tokens = require('../common/tokens.js');
 const imageEditingOptions = require('../options/imageEditingOptions.js');
 
 class ImageEditorService {
+    imageClient;
     slackClient;
 
-    constructor (slackClient) {
+    constructor (imageClient, slackClient) {
+        this.imageClient = imageClient;
         this.slackClient = slackClient;
     }
 
     async resizeToPublicUrl(imageFetchUrl) {
-        let originalImageBuffer, modifiedImageBuffer;
         // Fetch the previous image for editing
-        await axios.get(imageFetchUrl, {
-            responseType: 'arraybuffer'
-        })
-        .then((res) => {
-            // Buffer data
-            originalImageBuffer = Buffer.from(res.data, 'binary');
-        });
+        let originalImageBuffer = await this.imageClient.fetchImageAsBuffer(imageFetchUrl);
         
         // Load data into Sharp for resizing
+        let modifiedImageBuffer;
         await sharp(originalImageBuffer, imageEditingOptions.options)
         // fit == "inside" constrains the largest dimensions to the ones specified and maintains the aspect ratio of the image
         .resize({ width: 64, height: 64, fit: "inside" }) 
@@ -35,17 +30,11 @@ class ImageEditorService {
     }
 
     async cropToPublicUrl(imageFetchUrl) {
-        let originalImageBuffer, modifiedImageBuffer;
         // Fetch the previous image for editing
-        await axios.get(imageFetchUrl, {
-            responseType: 'arraybuffer'
-        })
-        .then((res) => {
-            // Buffer data
-            originalImageBuffer = Buffer.from(res.data, 'binary');
-        });
-
+        let originalImageBuffer = await this.imageClient.fetchImageAsBuffer(imageFetchUrl);
+        
         // Load data into Sharp for crop
+        let modifiedImageBuffer;
         let image = sharp(originalImageBuffer, imageEditingOptions.options);
         let imageMetadata = await image.metadata();
         // Find our minimum constraint for square cropping
@@ -62,17 +51,11 @@ class ImageEditorService {
     }
 
     async reduceQualityToPublicUrl(imageFetchUrl) {
-        let originalImageBuffer, modifiedImageBuffer;
         // Fetch the previous image for editing
-        await axios.get(imageFetchUrl, {
-            responseType: 'arraybuffer'
-        })
-        .then(async (res)  => {
-            // Buffer data
-            originalImageBuffer = Buffer.from(res.data, 'binary');
-        });
+        let originalImageBuffer = await this.imageClient.fetchImageAsBuffer(imageFetchUrl);
         
         // Load data into Sharp for quality reduction
+        let modifiedImageBuffer;
         await sharp(originalImageBuffer, imageEditingOptions.options)
         /* 
         Sharp applies quality modification at the type level. 

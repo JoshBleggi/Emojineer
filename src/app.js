@@ -1,7 +1,9 @@
 const { App } = require('@slack/bolt');
+const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
 const appOptions = require('./options/appOptions.js');
+const ImageFetchClient = require('./clients/imageFetchClient.js');
 const subscribers = require('./subscribers');
 const emojiController = require('./api/routes/emoji.js');
 const emojiHandlerClass = require('./services/emojiHandler.js');
@@ -11,7 +13,9 @@ const ImageEditorService = require('./services/imageEditor.js');
 const app = new App(appOptions.options);
 
 //Rudamentary dependency injection. Could be replaced by dedicated library.
-const imageEditor = new ImageEditorService(app.client);
+const imageClient = new ImageFetchClient(axios);
+
+const imageEditor = new ImageEditorService(imageClient, app.client);
 const emojiHandler = new emojiHandlerClass(app.client);
 subscribers(app, imageEditor, emojiHandler);
 
