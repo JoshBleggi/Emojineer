@@ -53,7 +53,7 @@ function loadListeners(app, imageEditor, emojiHandler) {
       await imageModificationResponse(client, respond, body.user.id, imageUrlString, params.emojiName);
     }
     catch (err) {
-        respond(`An error was experienced during the operation: ${err}`)
+        respond(`An error was experienced during the operation: ${err}`);
     }
   });
 
@@ -87,7 +87,7 @@ function loadListeners(app, imageEditor, emojiHandler) {
         await respond('Emoji uploaded successfully');
         break;
       case 'image_too_large_error':
-        await imageModificationResponse(client, respond, userId, urlText, emojiName);
+        await imageModificationResponse(client, respond, body.user.id, params.urlText, params.emojiName);
         break;
       case 'name_error':
         await respond('There was an issue with the provided name. Please choose another');
