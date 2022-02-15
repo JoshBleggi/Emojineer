@@ -36,3 +36,5 @@ describe('imageEditor.attemptUpload', () => {
         expect(result).toEqual('image_too_large_error');
     });
 });
+
+//ImageEditor is one of the more complex services since it relies on buffered images. I would want to devote a solid amount of time unit testing, with that in mind I decided to get some code coverage up front and knock out the lower hanging fruit.
