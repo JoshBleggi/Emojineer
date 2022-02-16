@@ -109,6 +109,8 @@ function loadListeners(app, imageEditor, emojiHandler) {
     let params = parseParams(payload.value);
     //Send to workspace owner for approval
     await emojiHandler.submitEmojiForApproval(body.user.team_id, params.urlText, params.emojiName);
+
+    await respond('Emoji submitted successfully')
   });
 
   app.action('cancel', async ({ ack, respond }) => {
