@@ -1,6 +1,7 @@
 class ImageClient {
     client;
 
+    //Dependency injection allows for unit testing
     constructor(client) {
         this.client = client;
     }

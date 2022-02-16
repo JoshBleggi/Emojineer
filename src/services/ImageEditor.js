@@ -85,20 +85,21 @@ class ImageEditorService {
             return 'success'
         } 
         catch (err) { 
-          switch (err.data.error) {
-            case 'resized_but_still_too_large':
-            case 'error_too_big':
-            case 'error_bad_wide':
-                return 'image_too_large_error';
-            case 'error_bad_name_i18n':
-            case 'error_name_taken':
-            case 'error_name_taken_i18n':
-                return 'name_error';
-            case 'no_image_uploaded':
-                return 'no_image_error'
-            default:
-              console.error(err);
-                return 'unknown_error'
+            //Return a DTO to the caller to simplify handling logic
+            switch (err.data.error) {
+                case 'resized_but_still_too_large':
+                case 'error_too_big':
+                case 'error_bad_wide':
+                    return 'image_too_large_error';
+                case 'error_bad_name_i18n':
+                case 'error_name_taken':
+                case 'error_name_taken_i18n':
+                    return 'name_error';
+                case 'no_image_uploaded':
+                    return 'no_image_error'
+                default:
+                console.error(err);
+                    return 'unknown_error'
             }
         }
     }

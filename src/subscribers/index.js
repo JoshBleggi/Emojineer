@@ -122,6 +122,7 @@ function loadListeners(app, imageEditor, emojiHandler) {
 }
 
 async function imageModificationResponse(client, respond, userId, urlText, emojiName) {
+  //Based on whether the user is an admin, a different view is served
   let userIsAdmin = (await client.users.info({ user: userId })).user.is_admin;
   if (userIsAdmin) {
     await respond({
