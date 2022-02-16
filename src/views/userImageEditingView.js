@@ -21,18 +21,18 @@ A size of 128KB or less is ideal`
            "type": "button",
            "text": {
              "type": "plain_text",
-             "text": "Resize"
+             "text": "Crop"
            },
-           "action_id": "resize",
+           "action_id": "crop",
            "value": payload
          },
          {
            "type": "button",
            "text": {
              "type": "plain_text",
-             "text": "Crop"
+             "text": "Resize"
            },
-           "action_id": "crop",
+           "action_id": "resize",
            "value": payload
          },
          {
